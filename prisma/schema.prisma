@@ -24,6 +24,7 @@ model Report {
   ramp_id                    BigInt?
   Catch_area                 String?    @map("Catch area")
   id                         BigInt     @id @default(autoincrement())
+  sample_date_parsed         DateTime?  @db.Date
   catcharea                  catcharea? @relation(fields: [catch_area_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_catch_area_id")
   ramps                      ramps?     @relation(fields: [ramp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_ramp_id")
 
