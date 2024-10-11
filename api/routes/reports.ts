@@ -4,7 +4,8 @@ import { Request, Response, NextFunction } from "express";
 
 // Initialize the Prisma client
 const prisma = new PrismaClient();
-// Get all reports with an optional limit
+
+// Get all reports with optional limit and sorted by sample_date_parsed
 export const getAllReports = async (
   req: Request,
   res: Response,
@@ -14,10 +15,13 @@ export const getAllReports = async (
 
   try {
     const reports = await prisma.report.findMany({
-      take: limit, // Use the limit for pagination
+      take: limit,
+      orderBy: {
+        sample_date_parsed: "desc", // Sort by the new parsed date column
+      },
       include: {
-        catcharea: true, // Include related catcharea
-        ramps: true, // Include related ramps
+        catcharea: true,
+        ramps: true,
       },
     });
     res.json(reports);
@@ -25,7 +29,6 @@ export const getAllReports = async (
     next(error);
   }
 };
-
 // Add a report
 export const addReport = async (
   req: Request,
