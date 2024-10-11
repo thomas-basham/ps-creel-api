@@ -5,7 +5,8 @@
   "main": "api/index.ts",
   "scripts": {
     "test": "test",
-    "start": "nodemon api/index.ts"
+    "start": "nodemon api/index.ts",
+    "postinstall": "prisma generate"
   },
   "author": "Thomas Basham",
   "license": "ISC",
