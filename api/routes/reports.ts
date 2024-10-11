@@ -4,15 +4,17 @@ import { Request, Response, NextFunction } from "express";
 
 // Initialize the Prisma client
 const prisma = new PrismaClient();
-
-// Get all reports
+// Get all reports with an optional limit
 export const getAllReports = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  const limit = parseInt(req.query.limit as string) || 10; // Default limit to 10 if not provided
+
   try {
     const reports = await prisma.report.findMany({
+      take: limit, // Use the limit for pagination
       include: {
         catcharea: true, // Include related catcharea
         ramps: true, // Include related ramps
