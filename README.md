@@ -151,36 +151,6 @@ Example:
 
 GET /reports/aggregate
 
-Delete a Report
-
-    • URL: /reports/:reportId
-    • Method: DELETE
-    • Description: Delete a report by its ID.
-    • URL Parameters:
-    • reportId: The ID of the report to delete.
-
-Example:
-
-DELETE /reports/3207
-
-Update a Report
-
-    • URL: /reports/:reportId
-    • Method: PUT
-    • Description: Update a report by its ID.
-    • URL Parameters:
-    • reportId: The ID of the report to update.
-    • Body: JSON object with updated report data.
-
-Example:
-
-PUT /reports/3207
-{
-"Sample_date": "Jan 01, 2024",
-"Anglers": 5,
-"Chinook": 2
-}
-
 ## Error Handling
 
 Errors are returned in the following format:
