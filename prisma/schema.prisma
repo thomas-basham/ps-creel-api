@@ -42,5 +42,7 @@ model ramps {
   name        String   @unique
   location    String?
   description String?
+  latitude    Float?   // Add latitude
+  longitude   Float?   // Add longitude
   reports     Report[]
 }
