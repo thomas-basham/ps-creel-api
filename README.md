@@ -2,7 +2,6 @@
 
 [frontend](https://github.com/Thomas-Basham/ps-creel)
 
-
 This API provides endpoints to manage and query creel report data for Puget Sound anglers. It is built with **Node.js**, **Express**, **TypeScript**, and **Prisma** ORM to interface with a **PostgreSQL** database.
 
 ## Table of Contents
@@ -18,17 +17,7 @@ This API provides endpoints to manage and query creel report data for Puget Soun
 
 ## Installation
 
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/your-username/ps-creel-api.git
-
-   2. Navigate to the project directory:
-   ```
-
-`cd ps-creel-api`
-
-    3. Install the dependencies:
+    1. Install the dependencies:
 
 `npm install`
 
@@ -39,7 +28,9 @@ This API provides endpoints to manage and query creel report data for Puget Soun
     3. Run Prisma migrations to set up the database schema:
 
 `npx prisma migrate dev --name init
-` 4. Start the development server:
+`
+
+4. Start the development server:
 
 `npm run dev
 `
