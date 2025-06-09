@@ -1,9 +1,5 @@
-// Import the Prisma client
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../../lib/prisma"; // adjust path as needed
 import { Request, Response, NextFunction } from "express";
-
-// Initialize the Prisma client
-const prisma = new PrismaClient();
 
 // Get all reports with optional limit and sorted by sample_date_parsed
 export const getAllReports = async (
@@ -11,7 +7,6 @@ export const getAllReports = async (
   res: Response,
   next: NextFunction
 ) => {
-  
   try {
     const limit = parseInt(req?.query?.limit as string) || 10; // Default limit to 10 if not provided
     const reports = await prisma.report.findMany({
