@@ -11,9 +11,9 @@ export const getAllReports = async (
   res: Response,
   next: NextFunction
 ) => {
-  const limit = parseInt(req.query.limit as string) || 10; // Default limit to 10 if not provided
-
+  
   try {
+    const limit = parseInt(req?.query?.limit as string) || 10; // Default limit to 10 if not provided
     const reports = await prisma.report.findMany({
       take: limit,
       orderBy: {
