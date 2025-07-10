@@ -83,16 +83,25 @@ export const getReportsByDate = async (
   const { startDate, endDate } = req.query;
 
   try {
-    const reports = await prisma.$queryRaw`
-      SELECT * FROM reports
-      WHERE TO_DATE("Sample date", 'Mon DD, YYYY') 
-      BETWEEN TO_DATE(${startDate}, 'YYYY-MM-DD') 
-      AND TO_DATE(${endDate}, 'YYYY-MM-DD')
-    `;
+    const reports = await prisma.report.findMany({
+      where: {
+        sample_date_parsed: {
+          gte: new Date(startDate as string),
+          lte: new Date(endDate as string),
+        },
+      },
+      orderBy: {
+        sample_date_parsed: "desc",
+      },
+      include: {
+        catcharea: true,
+        ramps: true,
+      },
+    });
 
     res.json(reports);
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 };
 
