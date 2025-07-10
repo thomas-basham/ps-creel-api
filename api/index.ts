@@ -17,6 +17,9 @@ import {
   getReportsByRamp,
   getReportsByAnglers,
   getAggregateFishData,
+  checkReportExists,
+  getRampByName,
+  getCatchAreaByName
 } from "./routes/reports";
 
 // @ts-ignore
@@ -73,6 +76,13 @@ app.get("/reports/anglers", getReportsByAnglers);
 // Route to get aggregate fish data
 app.get("/reports/aggregate", getAggregateFishData);
 
+app.post("/reports", addReport);
+
+app.get("/reports/exists", checkReportExists);
+
+app.get("/ramps/:rampName", getRampByName);
+
+app.get("/catchareas/:catchAreaName", getCatchAreaByName);
 // Error Handling
 // Generic Error Handling
 app.use(

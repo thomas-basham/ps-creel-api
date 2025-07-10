@@ -1,4 +1,4 @@
-import { prisma } from "../../lib/prisma"; // adjust path as needed
+import { prisma } from "../../prismaClient/prisma"; // adjust path as needed
 import { Request, Response, NextFunction } from "express";
 
 // Get all reports with optional limit and sorted by sample_date_parsed
@@ -212,6 +212,78 @@ export const getAggregateFishData = async (
       },
     });
     res.json(aggregateData);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const checkReportExists = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any | Response<any>> => {
+  const { sampleDateParsed, rampId, catchAreaId } = req.query;
+
+  if (!sampleDateParsed || !rampId || !catchAreaId) {
+    return res.status(400).json({ error: "Missing query parameters" });
+  }
+
+  try {
+    const existing = await prisma.report.findFirst({
+      where: {
+        sample_date_parsed: new Date(sampleDateParsed as string),
+        ramp_id: parseInt(rampId as string),
+        catch_area_id: parseInt(catchAreaId as string),
+      },
+    });
+
+    res.json({ exists: !!existing });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getRampByName = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any | Response<any>> => {
+  const { rampName } = req.params;
+
+  try {
+    const ramp = await prisma.ramps.findUnique({
+      where: { name: rampName },
+    });
+
+    if (!ramp) {
+      return res.status(404).json({ error: "Ramp not found" });
+    }
+
+    res.json(ramp);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCatchAreaByName = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any | Response<any>> => {
+  const { catchAreaName } = req.params;
+
+  try {
+    const catchArea = await prisma.catcharea.findUnique({
+      where: {
+        name: catchAreaName,
+      },
+    });
+
+    if (!catchArea) {
+      return res.status(404).json({ error: "Catch area not found" });
+    }
+
+    res.json(catchArea);
   } catch (error) {
     next(error);
   }
