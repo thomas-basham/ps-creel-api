@@ -1,159 +1,58 @@
-# Puget Sound Creel Data API
+# Puget Sound Creel Data API / ETL
 
-[frontend](https://github.com/Thomas-Basham/ps-creel)
+Node.js + Express + TypeScript + Prisma (v7) API backed by PostgreSQL, plus an ETL that ingests the WDFW Puget Sound creel CSV and upserts it into the database.
 
-This API provides endpoints to manage and query creel report data for Puget Sound anglers. It is built with **Node.js**, **Express**, **TypeScript**, and **Prisma** ORM to interface with a **PostgreSQL** database.
+## Prereqs
+- Node.js 18+
+- PostgreSQL reachable via `DATABASE_URL` (Supabase works)
+- WDFW CSV source: `https://wdfw.wa.gov/fishing/reports/creel/puget-annual/export?_format=csv`
 
-## Table of Contents
-
-- [Puget Sound Creel Data API](#puget-sound-creel-data-api)
-  - [Table of Contents](#table-of-contents)
-  - [Installation](#installation)
-  - [Setup](#setup)
-  - [Environment Variables](#environment-variables)
-  - [Available Routes](#available-routes)
-  - [Error Handling](#error-handling)
-  - [License](#license)
-
-## Installation
-
-    1. Install the dependencies:
-
-`npm install`
-
-## Setup
-
-    1. Ensure you have PostgreSQL installed and running on your machine or a cloud instance.
-    2. Set up the .env file with the necessary environment variables (see Environment Variables).
-    3. Run Prisma migrations to set up the database schema:
-
-`npx prisma migrate dev --name init
-`
-
-4. Start the development server:
-
-`npm run dev
-`
-
-## Environment Variables
-
-Create a .env file in the root directory with the following variables:
-
-DATABASE_URL="postgresql://\<USER>:\<PASSWORD>@\<HOST>:\<PORT>/\<DATABASE>"
+## Environment
+Create `.env` in the repo root:
+```
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE
 PORT=4000
-CLIENT_URL="<http://localhost:3000>" # Adjust this based on your frontend app
+CLIENT_URL=http://localhost:3000
+```
 
-Replace \<USER>, \<PASSWORD>, \<HOST>, \<PORT>, and \<DATABASE> with your PostgreSQL credentials.
+## Install
+```
+npm install
+```
 
-## Available Routes
+## Prisma (v7)
+- Config file: `prisma.config.ts`
+- Generate client: `npx prisma generate --config ./prisma.config.ts`
+- Apply schema (includes unique constraint on sample date + ramp + catch area): `npx prisma migrate dev --name init --config ./prisma.config.ts`
 
-Get All Reports
+## Run API
+```
+PORT=4000 npm start
+```
+Routes (JSON):
+- `GET /reports` (optional `?limit`)
+- `POST /reports`
+- `GET /reports/date?startDate=ISO&endDate=ISO`
+- `GET /reports/catcharea/:catchAreaName`
+- `GET /reports/species?species=Chinook&minCount=1`
+- `GET /reports/ramp/:rampName`
+- `GET /reports/anglers?minAnglers=3`
+- `GET /reports/aggregate`
+- Helpers: `GET /reports/exists`, `GET /ramps/:rampName`, `GET /catchareas/:catchAreaName`
 
-    • URL: /reports
-    • Method: GET
-    • Description: Fetch all reports from the database.
-    • Response: Returns an array of reports.
+## Run ETL (local)
+```
+npm run etl
+```
+Env options:
+- `CSV_URL` (default: WDFW export)
+- `SAMPLE_DATE_PARAM` (optional WDFW year selector)
+- `BATCH_SIZE` (default 50)
+- `DRY_RUN=true` to parse without writes
 
-Example:
+Behavior: streams CSV, normalizes dates/numbers, maps ramp/catch area names to IDs, and upserts on `(sample_date_parsed, ramp_id, catch_area_id)`.
 
-GET /reports
-
-Add a Report
-
-    • URL: /reports
-    • Method: POST
-    • Description: Add a new report to the database.
-    • Body: JSON object containing report data.
-
-Example:
-
-POST /reports
-{
-"Sample_date": "Dec 31, 2023",
-"Ramp_site": "Gig Harbor Ramp",
-"catch_area_id": 1,
-"Anglers": 4,
-"Chinook": 0
-}
-
-Get Reports by Date Range
-
-    • URL: /reports/date
-    • Method: GET
-    • Query Parameters:
-    • startDate: The start of the date range (e.g., Dec 01, 2023).
-    • endDate: The end of the date range (e.g., Dec 31, 2023).
-
-Example:
-
-GET /reports/date?startDate=Dec%201,%202023&endDate=Dec%2031,%202023
-
-Get Reports by Catch Area
-
-    • URL: /reports/catcharea/:catchAreaName
-    • Method: GET
-    • Description: Fetch all reports for a specific catch area.
-    • URL Parameters:
-    • catchAreaName: The name of the catch area (e.g., Area 13).
-
-Example:
-
-GET /reports/catcharea/Area%2013
-
-Get Reports by Species
-
-    • URL: /reports/species
-    • Method: GET
-    • Query Parameters:
-    • species: The name of the species (e.g., Chinook).
-    • minCount: Minimum number of fish caught (optional).
-
-Example:
-
-GET /reports/species?species=Chinook&minCount=1
-
-Get Reports by Ramp/Site
-
-    • URL: /reports/ramp/:rampName
-    • Method: GET
-    • Description: Fetch all reports for a specific ramp or site.
-    • URL Parameters:
-    • rampName: The name of the ramp or site (e.g., Gig Harbor Ramp).
-
-Example:
-
-GET /reports/ramp/Gig%20Harbor%20Ramp
-
-Get Reports with High Angler Counts
-
-    • URL: /reports/anglers
-    • Method: GET
-    • Query Parameters:
-    • minAnglers: Minimum number of anglers (e.g., 3).
-
-Example:
-
-GET /reports/anglers?minAnglers=3
-
-Get Aggregate Fish Data
-
-    • URL: /reports/aggregate
-    • Method: GET
-    • Description: Fetch aggregate data for fish counts and averages.
-
-Example:
-
-GET /reports/aggregate
-
-## Error Handling
-
-Errors are returned in the following format:
-
-{
-"error": "Error message",
-"message": "Detailed error description"
-}
-
-## License
-
-This project is licensed under the MIT License.
+## Lambda deployment (outline)
+- Handler: `etl/lambda.handler`
+- Provide envs above; schedule via EventBridge (e.g., every 12h)
+- Secrets from SSM/Secrets Manager; same PostgreSQL `DATABASE_URL`
