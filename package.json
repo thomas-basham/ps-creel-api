@@ -6,26 +6,31 @@
   "scripts": {
     "test": "test",
     "start": "nodemon api/index.ts",
+    "etl": "ts-node etl/run.ts",
     "postinstall": "prisma generate"
   },
   "author": "Thomas Basham",
   "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^6.10.1",
+    "@prisma/adapter-pg": "^7.2.0",
+    "@prisma/client": "^7.2.0",
     "axios": "^1.10.0",
     "cors": "^2.8.5",
+    "csv-parse": "^6.1.0",
     "csv-parser": "^3.2.0",
     "date-fns": "^4.1.0",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.6.1",
     "express": "^4.21.1",
-    "nodemon": "^3.1.7"
+    "nodemon": "^3.1.7",
+    "pg": "^8.13.1"
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.0",
     "@types/express": "^5.0.0",
     "@types/node": "^22.15.33",
+    "@types/pg": "^8.16.0",
     "nodemon": "^3.1.7",
-    "prisma": "^6.10.1",
+    "prisma": "^7.2.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }
