@@ -68,8 +68,10 @@ export const addReport = async (
         ramp_id,
       },
     });
+    console.log(newReport);
     res.json(newReport);
   } catch (error) {
+    console.warn(error);
     next(error);
   }
 };
