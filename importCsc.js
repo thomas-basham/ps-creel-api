@@ -2,21 +2,26 @@ const fs = require("fs");
 const path = require("path");
 const csv = require("csv-parser");
 const axios = require("axios").default;
-const { format } = require("date-fns");
+const { parse, isValid, format } = require("date-fns");
 
 const results = [];
 const API_BASE = "http://localhost:4000";
 
-fs.createReadStream(path.join(__dirname, "./wdfw_creel_data(17).csv"))
+fs.createReadStream(path.join(__dirname, "./wdfw_creel_data(19).csv"))
   .pipe(csv())
   .on("data", (data) => results.push(data))
   .on("end", async () => {
     for (const row of results) {
       try {
-        const formattedDate = format(
-          new Date(row["Sample date"]),
-          "yyyy-MM-dd"
-        );
+        // Try parsing "Sample date" using known format
+        const rawDate = row["Sample date"];
+        const parsedDate = parse(rawDate.trim(), "MMM d, yyyy", new Date());
+        if (!isValid(parsedDate)) {
+          console.warn(`⚠️ Invalid date: "${rawDate}"`);
+          continue;
+        }
+
+        const formattedDate = format(parsedDate, "yyyy-MM-dd");
 
         const rampName = row["Ramp/site"];
         const catchAreaName = row["Catch area"];
@@ -60,7 +65,7 @@ fs.createReadStream(path.join(__dirname, "./wdfw_creel_data(17).csv"))
 
         // Submit report
         await axios.post(`${API_BASE}/reports`, {
-          Sample_date: row["Sample date"],
+          Sample_date: rawDate,
           sample_date_parsed: formattedDate,
           Ramp_site: rampName,
           Catch_area: catchAreaName,
