@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Report {
@@ -29,6 +28,7 @@ model Report {
   ramps                      ramps?     @relation(fields: [ramp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_ramp_id")
 
   @@map("reports")
+  @@unique([sample_date_parsed, ramp_id, catch_area_id], map: "reports_sample_ramp_catcharea_key")
 }
 
 model catcharea {
