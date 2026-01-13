@@ -14,6 +14,8 @@ env:
   ETL_S3_BUCKET: ${{ vars.ETL_S3_BUCKET }}
   ETL_S3_PREFIX: ${{ vars.ETL_S3_PREFIX }}
   STACK_NAME: ps-creel-etl
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  DIRECT_URL: ${{ secrets.DIRECT_URL }}
 
 jobs:
   deploy:
