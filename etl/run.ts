@@ -2,7 +2,10 @@ import axios from "axios";
 import { parse as parseCsv } from "csv-parse";
 import { isValid, parse as parseDate } from "date-fns";
 import { prisma } from "../prismaClient/prisma";
-import { ramps as RampModel, catcharea as CatchAreaModel } from "@prisma/client";
+import {
+  ramps as RampModel,
+  catcharea as CatchAreaModel,
+} from "@prisma/client";
 
 type CsvRow = Record<string, string>;
 

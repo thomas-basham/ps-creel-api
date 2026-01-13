@@ -1,0 +1,68 @@
+name: Deploy ETL Lambda
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  ETL_S3_BUCKET: ${{ vars.ETL_S3_BUCKET }}
+  ETL_S3_PREFIX: ${{ vars.ETL_S3_PREFIX }}
+  STACK_NAME: ps-creel-etl
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Lambda
+        run: npx tsc -p tsconfig.lambda.json
+
+      - name: Package Lambda
+        run: zip -r "etl-${GITHUB_SHA}.zip" dist node_modules package.json
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload Lambda artifact
+        run: |
+          PREFIX="${ETL_S3_PREFIX:-etl/}"
+          KEY="${PREFIX}etl-${GITHUB_SHA}.zip"
+          aws s3 cp "etl-${GITHUB_SHA}.zip" "s3://${ETL_S3_BUCKET}/${KEY}"
+          echo "ETL_S3_KEY=${KEY}" >> "$GITHUB_ENV"
+
+      - name: Deploy CloudFormation stack
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+        run: |
+          aws cloudformation deploy \
+            --template-file infra/etl-schedule.yaml \
+            --stack-name "${STACK_NAME}" \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --no-fail-on-empty-changeset \
+            --parameter-overrides \
+              EtlCodeS3Bucket="${ETL_S3_BUCKET}" \
+              EtlCodeS3Key="${ETL_S3_KEY}" \
+              DatabaseUrl="${DATABASE_URL}" \
+              DirectUrl="${DIRECT_URL}"

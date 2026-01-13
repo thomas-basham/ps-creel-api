@@ -22,8 +22,9 @@ npm install
 
 ## Prisma (v7)
 - Config file: `prisma.config.ts`
+- Generator includes `binaryTargets = ["native", "rhel-openssl-3.0.x"]` to support Lambda’s Linux runtime.
 - Generate client: `npx prisma generate --config ./prisma.config.ts`
-- Apply schema (includes unique constraint on sample date + ramp + catch area): `npx prisma migrate dev --name init --config ./prisma.config.ts`
+- Apply schema (unique on sample date + ramp + catch area): `npx prisma migrate dev --name init --config ./prisma.config.ts`
 
 ## Run API
 ```
@@ -53,6 +54,7 @@ Env options:
 Behavior: streams CSV, normalizes dates/numbers, maps ramp/catch area names to IDs, and upserts on `(sample_date_parsed, ramp_id, catch_area_id)`.
 
 ## Lambda deployment (outline)
-- Handler: `etl/lambda.handler`
-- Provide envs above; schedule via EventBridge (e.g., every 12h)
-- Secrets from SSM/Secrets Manager; same PostgreSQL `DATABASE_URL`
+- API Lambda: handler `api/lambda.handler` wraps Express via `serverless-http`; expose with API Gateway HTTP API.
+- ETL Lambda: handler `etl/lambda.handler`; trigger with EventBridge every 12h.
+- Both Lambdas need `DATABASE_URL` (use Secrets Manager/SSM). Optional: `CSV_URL`, `SAMPLE_DATE_PARAM`, `BATCH_SIZE`, `DRY_RUN` for ETL.
+- Package with the generated Prisma client (Linux target), `node_modules`, and project files. Use Node 18/20 runtimes. Memory: API ~512–1024 MB; ETL ~512–1024 MB, 3–5 min timeout.

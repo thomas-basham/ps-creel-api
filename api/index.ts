@@ -30,6 +30,7 @@ BigInt.prototype.toJSON = function () {
 
 // create an express application
 const app = express();
+export { app };
 
 // define a port
 const PORT = process.env.PORT;
@@ -105,9 +106,8 @@ app.use((request: Request, response: Response, next: NextFunction) => {
 });
 
 // make the server listen on our port
-app.listen(PORT, () => {
-  console.log(`The server is running on http://localhost:${PORT}`);
-});
-
-// export our app for testing
-module.exports = app;
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`The server is running on http://localhost:${PORT}`);
+  });
+}
