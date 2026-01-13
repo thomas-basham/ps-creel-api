@@ -2,6 +2,11 @@
 
 Node.js + Express + TypeScript + Prisma (v7) API backed by PostgreSQL, plus an ETL that ingests the WDFW Puget Sound creel CSV and upserts it into the database.
 
+## Frontend
+
+- Deployed: <https://pscreelreports.com/>
+- Source (GitHub): <https://github.com/thomas-basham/ps-creel>
+
 ## Prereqs
 
 - Node.js 18+
@@ -64,9 +69,39 @@ Env options:
 
 Behavior: streams CSV, normalizes dates/numbers, maps ramp/catch area names to IDs, and upserts on `(sample_date_parsed, ramp_id, catch_area_id)`.
 
-## Lambda deployment (outline)
+## ETL Lambda (CloudFormation)
 
-- API Lambda: handler `api/lambda.handler` wraps Express via `serverless-http`; expose with API Gateway HTTP API.
-- ETL Lambda: handler `etl/lambda.handler`; trigger with EventBridge every 12h.
-- Both Lambdas need `DATABASE_URL` (use Secrets Manager/SSM). Optional: `CSV_URL`, `SAMPLE_DATE_PARAM`, `BATCH_SIZE`, `DRY_RUN` for ETL.
-- Package with the generated Prisma client (Linux target), `node_modules`, and project files. Use Node 18/20 runtimes. Memory: API ~512–1024 MB; ETL ~512–1024 MB, 3–5 min timeout.
+- Template: `infra/etl-schedule.yaml`
+- Default schedule: `rate(20 minutes)` (EventBridge)
+- Handler: `dist/etl/lambda.handler` (built via `tsconfig.lambda.json`)
+- Required env: `DATABASE_URL` (Optional: `DIRECT_URL`, `CSV_URL`, `SAMPLE_DATE_PARAM`, `BATCH_SIZE`, `DRY_RUN`)
+
+Deploy example:
+
+```
+aws cloudformation deploy \
+  --template-file infra/etl-schedule.yaml \
+  --stack-name ps-creel-etl \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --parameter-overrides \
+    EtlCodeS3Bucket=YOUR_BUCKET \
+    EtlCodeS3Key=path/to/etl.zip \
+    DatabaseUrl='postgresql://...'
+```
+
+## GitHub Actions deploy
+
+Workflow: `.github/workflows/deploy-etl.yml` (runs on push to `main`).
+
+Required GitHub variables:
+
+- `AWS_REGION`
+- `ETL_S3_BUCKET`
+- Optional: `ETL_S3_PREFIX` (defaults to `etl/`)
+
+Required GitHub secrets:
+
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `DATABASE_URL`
+- Optional: `DIRECT_URL`
