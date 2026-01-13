@@ -19,7 +19,7 @@ import {
   getAggregateFishData,
   checkReportExists,
   getRampByName,
-  getCatchAreaByName
+  getCatchAreaByName,
 } from "./routes/reports";
 
 // @ts-ignore
@@ -30,7 +30,7 @@ BigInt.prototype.toJSON = function () {
 
 // create an express application
 const app = express();
-export { app };
+export default app;
 
 // define a port
 const PORT = process.env.PORT;
