@@ -4,13 +4,13 @@ Node.js + Express + TypeScript + Prisma (v7) API backed by PostgreSQL, plus an E
 
 ## Frontend
 
-- Deployed: <https://pscreelreports.com/>
+- Deployed: <https://pscreelreports.com>
 - Source (GitHub): <https://github.com/thomas-basham/ps-creel>
 
 ## Prereqs
 
 - Node.js 18+
-- PostgreSQL reachable via `DATABASE_URL` (Supabase works)
+- PostgreSQL reachable via `DATABASE_URL`
 - WDFW CSV source: `https://wdfw.wa.gov/fishing/reports/creel/puget-annual/export?_format=csv`
 
 ## Environment
